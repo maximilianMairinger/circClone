@@ -1,4 +1,4 @@
-import circClone from "../../app/src/circClone"
+import { cloneKeys, cloneKeysButKeepSym, mergeDeep } from "../../app/src/circClone"
 //const testElem = document.querySelector("#test")
 
-circClone()
+
