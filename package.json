@@ -4,7 +4,6 @@
   "description": "Simple lib to savely clone circular objects.",
   "main": "./app/dist/esm/circClone.mjs",
   "types": "./app/dist/esm/circClone.d.ts",
-  "bin": "./app/dist/esm/cli/circClone-cli.js",
   "exports": {
     "node": {
       "import": "./app/dist/esm/circClone.mjs",
