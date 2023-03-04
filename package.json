@@ -1,0 +1,66 @@
+{
+  "name": "circ-clone",
+  "version": "0.0.1",
+  "description": "Simple lib to savely clone circular objects.",
+  "main": "./app/dist/esm/circClone.mjs",
+  "types": "./app/dist/esm/circClone.d.ts",
+  "bin": "./app/dist/esm/cli/circClone-cli.js",
+  "exports": {
+    "node": {
+      "import": "./app/dist/esm/circClone.mjs",
+      "require": "./app/dist/cjs/circClone.js"
+    },
+    "default": "./app/dist/esm/circClone.mjs"
+  },
+  "scripts": {
+    "build": "del-cli app/dist && rollup --config rollup.prod.config.js && renamer --find /\\.js$/i --replace .mjs app/dist/esm/**",
+    "dev": "npm run devWeb",
+    "devWeb": "rollup --config rollup.web.dev.config.js -w",
+    "devNode": "rollup --config rollup.node.dev.config.js -w",
+    "deploy": "npm run build && npm publish",
+    "repl": "node ./repl/dist/circClone-repl.js",
+    "start": "npm run repl",
+    "buildTest": "rollup --config rollup.node.test.config.js",
+    "test": "npm run buildTest && jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/maximilianMairinger/circClone.git"
+  },
+  "keywords": [
+  "circ",
+  "circular",
+  "cyclic",
+  "recursive",
+  "self-referencing",
+  "object",
+  "clone",
+  "copy",
+  "simple"
+],
+  "author": "maximilianMairinger",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/maximilianMairinger/circClone/issues"
+  },
+  "homepage": "https://github.com/maximilianMairinger/circClone#readme",
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^13.0.0",
+    "@rollup/plugin-json": "^4.1.0",
+    "@rollup/plugin-node-resolve": "^8.1.0",
+    "@rollup/plugin-typescript": "^5.0.0",
+    "@types/jest": "^26.0.15",
+    "@types/node": "^13.13.4",
+    "commander": "^6.2.1",
+    "del-cli": "^5.0.0",
+    "jest": "^26.6.3",
+    "renamer": "^4.0.0",
+    "rollup": "^2.18.1",
+    "tslib": "2.0.0",
+    "typescript": "^4.0.2",
+    "webpack-merge": "^5.0.9"
+  },
+  "dependencies": {
+
+  }
+}
