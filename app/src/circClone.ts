@@ -9,7 +9,7 @@ export const cloneKeysButKeepSym = (() => {
       if (known.has(ob)) return known.get(ob)
       const cloned = new ob.constructor()
       known.set(ob, cloned)
-      for (const key of Object.keys(ob)) cloned[key] = cloneKeysButKeepSymRec(ob[key])
+      for (const key of Object.keys(ob)) if (cloned[key] === undefined) cloned[key] = cloneKeysButKeepSymRec(ob[key])
       for (const sym of Object.getOwnPropertySymbols(ob)) cloned[sym] = ob[sym]
       return cloned
     }
@@ -17,12 +17,15 @@ export const cloneKeysButKeepSym = (() => {
   }
 })()
 
+
+// todo: change from and into 
 export function mergeDeepButNotRecursive(from, into) {
   for (const key of Object.keys(from)) {
     if (into[key] instanceof Object && from[key] instanceof Object) {
       mergeDeepButNotRecursive(from[key], into[key])
     }
     else {
+      if (into[key] !== undefined && !into.hasOwnProperty(key)) continue
       into[key] = from[key]
     }
   }
@@ -44,6 +47,7 @@ export const mergeDeep = (() => {
           mergeDeepRec(from[key], into[key])
         }
         else {
+          if (into[key] !== undefined && !into.hasOwnProperty(key)) continue
           into[key] = from[key]
         }
       }
@@ -66,7 +70,7 @@ export const cloneKeys = (() => {
       if (known.has(ob)) return known.get(ob)
       const cloned = new ob.constructor()
       known.set(ob, cloned)
-      for (const key of Object.keys(ob)) cloned[key] = cloneKeysRec(ob[key])
+      for (const key of Object.keys(ob)) if (cloned[key] === undefined) cloned[key] = cloneKeysRec(ob[key])
       return cloned
     }
     else return ob
