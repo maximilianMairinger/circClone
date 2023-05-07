@@ -22,12 +22,12 @@ export const cloneKeysButKeepSym = (() => {
 
 
 // todo: change from and into 
-export function mergeKeysDeepButNotCyclic<Into extends object, From extends object>(from: From, into: Into): Into & From {
+export function mergeKeysDeepButNotCyclic<Into extends object, From extends object>(into: Into, from: From): Into & From {
   for (const key of Object.keys(from)) {
     if (into[key] !== undefined && !into.hasOwnProperty(key)) continue // prototype poisoning protection
 
     if (from[key] instanceof Object) {
-      if (into[key] instanceof Object) mergeKeysDeepButNotCyclic(from[key], into[key])
+      if (into[key] instanceof Object) mergeKeysDeepButNotCyclic(into[key], from[key])
       else into[key] = cloneKeys(from[key])
     }
     else into[key] = from[key]
@@ -38,19 +38,19 @@ export function mergeKeysDeepButNotCyclic<Into extends object, From extends obje
 
 export const mergeKeysDeep = (() => {
   let known: WeakMap<any, any>
-  return function mergeKeysDeep<Into extends object, From extends object>(from: From, into: Into): Into & From {
+  return function mergeKeysDeep<Into extends object, From extends object>(into: Into, from: From): Into & From {
     known = new WeakMap()
-    mergeKeysDeepRec(from, into)
+    mergeKeysDeepRec(into, from)
     return into as any
   }
-  function mergeKeysDeepRec(from: object, into: object) { 
+  function mergeKeysDeepRec(into: object, from: object) { 
     known.set(from, into)
     for (const key of Object.keys(from)) {
       if (into[key] !== undefined && !into.hasOwnProperty(key)) continue // prototype poisoning protection
 
       if (from[key] instanceof Object) {
         if (known.has(from[key])) into[key] = known.get(from[key])
-        else if (into[key] instanceof Object) mergeKeysDeepRec(from[key], into[key])
+        else if (into[key] instanceof Object) mergeKeysDeepRec(into[key], from[key])
         else into[key] = cloneKeys(from[key])
       }
       else into[key] = from[key]
