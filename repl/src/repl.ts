@@ -1,5 +1,6 @@
-import { cloneKeys, cloneKeysButKeepSym, mergeDeep, mergeDeepButNotCyclic } from "../../app/src/circClone"
+import { cloneKeys, cloneKeysButKeepSym, mergeKeysDeep, mergeKeysDeepButNotCyclic } from "../../app/src/circClone"
 import deepMerge from "deepmerge"
+import rfdc from 'rfdc'
 
 
 // const objA = { a: "a" }
@@ -11,17 +12,26 @@ import deepMerge from "deepmerge"
 // console.log(mergeDeep(objA, objB))
 
 
+// const symC = Symbol("c")
 
-const from = { a: 1, b: { c: 3 } }
-from.b.d = from
-const into = { a: 2, b: { c: 4, d: "gets overriden" } }
-into.b.d = into
-
-const out = mergeDeep(from, into)
-
-console.log(out)
+const ob = Object.create(null)
+ob.a = "a"
+ob["__proto__"] = { b: "Whaaa" }
 
 
+rfdc()(ob)
+cloneKeys(ob)
+cloneKeysButKeepSym(ob)
+
+const obB = Object.create(null)
+obB.b = "b"
+obB["__proto__"] = { c: "Whaaa2" }
+console.log(mergeKeysDeep(ob, obB))
+console.log(mergeKeysDeepButNotCyclic(ob, obB))
+
+
+
+console.log(ob.b)
 
 
 // const objA = { a: "a" }

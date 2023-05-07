@@ -24,7 +24,7 @@ export const cloneKeysButKeepSym = (() => {
 // todo: change from and into 
 export function mergeKeysDeepButNotCyclic<Into extends object, From extends object>(from: From, into: Into): Into & From {
   for (const key of Object.keys(from)) {
-    if (into[key] !== undefined && !into.hasOwnProperty(key)) continue // prototype poisoning protection
+    if (into[key] !== undefined && !Object.hasOwn(into, key)) continue // prototype poisoning protection
 
     if (from[key] instanceof Object) {
       if (into[key] instanceof Object) mergeKeysDeepButNotCyclic(from[key], into[key])
@@ -56,7 +56,7 @@ export const mergeKeysDeep = (() => {
   function mergeKeysDeepRec(from: object, into: object) { 
     known.set(from, into)
     for (const key of Object.keys(from)) {
-      if (into[key] !== undefined && !into.hasOwnProperty(key)) continue // prototype poisoning protection
+      if (into[key] !== undefined && !Object.hasOwn(into, key)) continue // prototype poisoning protection
 
       if (from[key] instanceof Object) {
         if (known.has(from[key])) into[key] = known.get(from[key])
@@ -95,5 +95,11 @@ export const cloneKeys = (() => {
   }
 })()
 
-
 export default cloneKeys
+
+
+import rfdc from 'rfdc'
+
+
+
+
