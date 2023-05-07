@@ -32,12 +32,12 @@ Merges the properties of `from` into `into` recursively with support for cyclic 
 ```ts
 import { mergeDeep } from "circ-clone"
 
+const into = { a: 2, b: { c: 4, d: { doesntMatter: "whats in here", asItGets: "overriden" } } }
 const from = { a: 1, b: { c: 3, d: "see one line below" } }
 from.b.d = from
-const into = { a: 2, b: { c: 4, d: { doesntMatter: "whats in here", asItGets: "overriden" } } }
 
 
-const merged = mergeDeep(from, into)
+const merged = mergeDeep(into, from)
 // merged = into = {
 //   a: 1,
 //   b: {
@@ -58,10 +58,10 @@ Merges the properties of `from` into `into` without considering cyclic reference
 ```ts
 import { mergeDeepButNotCyclic } from "circ-clone"
 
-const from = { a: 1, b: { c: 3 } }
 const into = { a: 2, b: { c: 4, e: 5 } }
+const from = { a: 1, b: { c: 3 } }
 
-const merged = mergeDeepButNotCyclic(from, into)
+const merged = mergeDeepButNotCyclic(into, from)
 // merged = into = {
 //   a: 1,
 //   b: {
