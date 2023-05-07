@@ -36,16 +36,6 @@ export function mergeKeysDeepButNotCyclic<Into extends object, From extends obje
 }
 
 
-// legacy
-export const mergeDeepButNotRecursive = (...a) => {
-  console.log('mergeDeepButNotRecursive is deprecated, use mergeKeysDeepButNotCyclic instead')
-  return mergeKeysDeepButNotCyclic(...a as [any, any])
-}
-export const mergeDeepButNotCyclic = (...a) => {
-  console.log('mergeDeepButNotCyclic is deprecated, use mergeKeysDeepButNotCyclic instead')
-  return mergeKeysDeepButNotCyclic(...a as [any, any])
-}
-
 export const mergeKeysDeep = (() => {
   let known: WeakMap<any, any>
   return function mergeKeysDeep<Into extends object, From extends object>(from: From, into: Into): Into & From {
@@ -67,13 +57,6 @@ export const mergeKeysDeep = (() => {
     }
   }
 })()
-
-// legacy
-export const mergeDeep = (...a) => {
-  console.log('mergeDeep is deprecated, use mergeKeysDeep instead')
-  return mergeKeysDeep(...a as [any, any])
-}
-
 
 
 export const cloneKeys = (() => {
