@@ -1,7 +1,7 @@
 {
   "name": "circ-clone",
   "version": "1.0.1",
-  "description": "Simple lib to savely clone circular objects.",
+  "description": "Simple lib to safely clone circular objects.",
   "main": "./app/dist/esm/circClone.mjs",
   "types": "./app/dist/esm/circClone.d.ts",
   "exports": {
@@ -12,7 +12,9 @@
     "default": "./app/dist/esm/circClone.mjs"
   },
   "scripts": {
-    "build": "del-cli app/dist && rollup --config rollup.prod.config.js && renamer --find /\\.js$/i --replace .mjs app/dist/esm/**",
+    "build": "del-cli app/dist && concurrently \"npm run buildESM\" \"npm run buildCJS\" --raw",
+    "buildESM": "tsc -p ./tsconfig.prod.esm.json && mjsify app/dist/esm",
+    "buildCJS": "tsc -p ./tsconfig.prod.cjs.json",
     "dev": "npm run devWeb",
     "devWeb": "rollup --config rollup.web.dev.config.js -w",
     "devNode": "rollup --config rollup.node.dev.config.js -w",
@@ -51,10 +53,13 @@
     "@types/jest": "^26.0.15",
     "@types/node": "^13.13.4",
     "commander": "^6.2.1",
+    "concurrently": "^8.0.1",
     "deepmerge": "^4.3.1",
     "del-cli": "^5.0.0",
     "jest": "^26.6.3",
+    "mjsify": "^1.0.8",
     "renamer": "^4.0.0",
+    "req-package-json": "^2.1.0",
     "rfdc": "^1.3.0",
     "rollup": "^2.18.1",
     "tslib": "2.0.0",
