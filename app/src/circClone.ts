@@ -7,7 +7,7 @@ export const cloneKeysButKeepSym = (() => {
   function cloneKeysButKeepSymRec(ob: any) {
     if (typeof ob === "object") {
       if (known.has(ob)) return known.get(ob)
-      const cloned = new ob instanceof Array ? Array : Object
+      const cloned = new (ob instanceof Array ? Array : Object)
       known.set(ob, cloned)
       
       for (const key of Object.keys(ob)) if (cloned[key] === undefined) cloned[key] = cloneKeysButKeepSymRec(ob[key])
@@ -85,7 +85,7 @@ export const cloneKeys = (() => {
   function cloneKeysRec(ob: any) {
     if (typeof ob === "object") {
       if (known.has(ob)) return known.get(ob)
-      const cloned = new ob instanceof Array ? Array : Object
+      const cloned = new (ob instanceof Array ? Array : Object)
       known.set(ob, cloned)
       for (const key of Object.keys(ob)) if (cloned[key] === undefined) cloned[key] = cloneKeysRec(ob[key])
       // prototype poisoning protection >^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
