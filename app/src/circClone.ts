@@ -5,7 +5,7 @@ export const cloneKeysButKeepSym = (() => {
     return cloneKeysButKeepSymRec(ob)
   }
   function cloneKeysButKeepSymRec(ob: any) {
-    if (ob instanceof Object) {
+    if (typeof ob === "object") {
       if (known.has(ob)) return known.get(ob)
       const cloned = new ob instanceof Array ? Array : Object
       known.set(ob, cloned)
@@ -26,8 +26,8 @@ export function mergeKeysDeepButNotCyclic<Into extends object, From extends obje
   for (const key of Object.keys(from)) {
     if (into[key] !== undefined && !Object.hasOwn(into, key)) continue // prototype poisoning protection
 
-    if (from[key] instanceof Object) {
-      if (into[key] instanceof Object) mergeKeysDeepButNotCyclic(from[key], into[key])
+    if (typeof from[key] === "object") {
+      if (typeof into[key] === "object") mergeKeysDeepButNotCyclic(from[key], into[key])
       else into[key] = cloneKeys(from[key])
     }
     else into[key] = from[key]
@@ -58,9 +58,9 @@ export const mergeKeysDeep = (() => {
     for (const key of Object.keys(from)) {
       if (into[key] !== undefined && !Object.hasOwn(into, key)) continue // prototype poisoning protection
 
-      if (from[key] instanceof Object) {
+      if (typeof from[key] === "object") {
         if (known.has(from[key])) into[key] = known.get(from[key])
-        else if (into[key] instanceof Object) mergeKeysDeepRec(from[key], into[key])
+        else if (typeof into[key] === "object") mergeKeysDeepRec(from[key], into[key])
         else into[key] = cloneKeys(from[key])
       }
       else into[key] = from[key]
@@ -83,9 +83,9 @@ export const cloneKeys = (() => {
     return cloneKeysRec(ob)
   }
   function cloneKeysRec(ob: any) {
-    if (ob instanceof Object) {
+    if (typeof ob === "object") {
       if (known.has(ob)) return known.get(ob)
-      const cloned = new ob.constructor()
+      const cloned = new ob instanceof Array ? Array : Object
       known.set(ob, cloned)
       for (const key of Object.keys(ob)) if (cloned[key] === undefined) cloned[key] = cloneKeysRec(ob[key])
       // prototype poisoning protection >^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
