@@ -13,5 +13,6 @@ rollup.node.dev.config.js
 rollup.web.dev.config.js
 jest.config.js
 .DS_Store
-
-
+rollup.prod.config.js
+tsconfig.json 
+tsconfig.prod.json
