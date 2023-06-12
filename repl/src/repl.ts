@@ -3,6 +3,9 @@ import deepMerge from "deepmerge"
 import rfdc from 'rfdc'
 
 
+import "./bench"
+
+
 // const objA = { a: "a" }
 // const objB = { b: "b" }
 // objA.aNowB = objB
@@ -14,24 +17,26 @@ import rfdc from 'rfdc'
 
 // const symC = Symbol("c")
 
-const ob = Object.create(null)
-ob.a = "a"
-ob["__proto__"] = { b: "Whaaa" }
+// const ob = Object.create(null)
+// ob.a = "a"
+// ob["__proto__"] = { b: "Whaaa" }
 
 
-rfdc()(ob)
-cloneKeys(ob)
-cloneKeysButKeepSym(ob)
+// rfdc()(ob)
+// cloneKeys(ob)
+// cloneKeysButKeepSym(ob)
 
-const obB = Object.create(null)
-obB.b = "b"
-obB["__proto__"] = { c: "Whaaa2" }
-console.log(mergeKeysDeep(ob, obB))
-console.log(mergeKeysDeepButNotCyclic(ob, obB))
+// const obB = Object.create(null)
+// obB.b = "b"
+// obB["__proto__"] = { c: "Whaaa2" }
+// console.log(mergeKeysDeep(ob, obB))
+// console.log(mergeKeysDeepButNotCyclic(ob, obB))
 
 
 
-console.log(ob.b)
+// console.log(ob.b)
+
+
 
 
 // const objA = { a: "a" }
