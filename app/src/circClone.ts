@@ -5,7 +5,7 @@ export const cloneKeysButKeepSym = (() => {
     return cloneKeysButKeepSymRec(ob)
   }
   function cloneKeysButKeepSymRec(ob: any) {
-    if (typeof ob === "object") {
+    if (typeof ob === "object" && ob !== null) {
       if (known.has(ob)) return known.get(ob)
       const cloned = new (ob instanceof Array ? Array : Object)
       known.set(ob, cloned)
@@ -24,13 +24,15 @@ export const cloneKeysButKeepSym = (() => {
 // todo: change from and into 
 export function mergeKeysDeepButNotCyclic<Into extends object, From extends object>(into: Into, from: From): Into & From {
   for (const key of Object.keys(from)) {
-    if (into[key] !== undefined && !Object.hasOwn(into, key)) continue // prototype poisoning protection
+    const intoVal = into[key]
+    const fromVal = from[key]
+    if (intoVal !== undefined && !Object.hasOwn(into, key)) continue // prototype poisoning protection
 
-    if (typeof from[key] === "object") {
-      if (typeof into[key] === "object") mergeKeysDeepButNotCyclic(into[key], from[key])
+    if (typeof from[key] === "object" && fromVal !== null) {
+      if (typeof into[key] === "object" && intoVal !== null) mergeKeysDeepButNotCyclic(intoVal, fromVal)
       else into[key] = cloneKeys(from[key])
     }
-    else into[key] = from[key]
+    else into[key] = fromVal
   }
   return into as any
 }
@@ -46,14 +48,17 @@ export const mergeKeysDeep = (() => {
   function mergeKeysDeepRec(into: object, from: object) { 
     known.set(from, into)
     for (const key of Object.keys(from)) {
-      if (into[key] !== undefined && !Object.hasOwn(into, key)) continue // prototype poisoning protection
+      const intoVal = into[key]
+      const fromVal = from[key]
+      if (intoVal !== undefined && !Object.hasOwn(into, key)) continue // prototype poisoning protection
+      
 
-      if (typeof from[key] === "object") {
+      if (typeof from[key] === "object" && fromVal !== null) {
         if (known.has(from[key])) into[key] = known.get(from[key])
-        else if (typeof into[key] === "object") mergeKeysDeepRec(into[key], from[key])
+        else if (typeof into[key] === "object" && intoVal !== null) mergeKeysDeepRec(intoVal, fromVal)
         else into[key] = cloneKeys(from[key])
       }
-      else into[key] = from[key]
+      else into[key] = fromVal
     }
   }
 })()
@@ -66,7 +71,7 @@ export const cloneKeys = (() => {
     return cloneKeysRec(ob)
   }
   function cloneKeysRec(ob: any) {
-    if (typeof ob === "object") {
+    if (typeof ob === "object" && ob !== null) {
       if (known.has(ob)) return known.get(ob)
       const cloned = new (ob instanceof Array ? Array : Object)
       known.set(ob, cloned)
