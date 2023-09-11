@@ -1,6 +1,6 @@
 {
   "name": "circ-clone",
-  "version": "2.1.4",
+  "version": "2.1.5",
   "description": "Simple lib to safely clone circular objects.",
   "main": "./app/dist/esm/circClone.mjs",
   "types": "./app/dist/esm/circClone.d.ts",
