@@ -1,3 +1,10 @@
+export async function polyfill() {
+  if (!(Object as any).hasOwn) {
+    const { shim } = await import("object.hasown")
+    shim()
+  }
+}
+
 export const cloneKeysButKeepSym = (() => {
   let known: WeakMap<any, any>
   return function cloneKeysButKeepSym<Ob extends Object>(ob: Ob): Ob {
