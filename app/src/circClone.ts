@@ -92,3 +92,49 @@ export const cloneKeys = (() => {
 
 export default cloneKeys
 
+
+type KeyChain = string[]
+
+export const findShortestPathToPrimitive = (() => {
+  let known: WeakSet<any>
+  function findShortestPathToPrimitiveRec(ob: object, matching: (a: unknown) => boolean): KeyChain[] {
+    known.add(ob)
+    
+    const found = [] as KeyChain[]
+    
+    let cur: ({keyChain: KeyChain, ob: object})[] = [{keyChain: [], ob}]
+    while(cur.length > 0) {
+      const needDeeper = [] as ({keyChain: KeyChain, ob: object})[]
+      for (const {ob, keyChain} of cur) {
+        for (const key in ob) {
+          if (typeof ob[key] === "object" && ob[key] !== null && (Object.getPrototypeOf(ob[key]) === null || Object.getPrototypeOf(ob[key]) === Object.prototype)) {
+            if (known.has(ob[key])) continue
+            known.add(ob[key])
+            needDeeper.push({keyChain: [...keyChain, key], ob: ob[key]})
+          }
+          else if (matching(ob[key])) found.push([...keyChain, key])
+        }
+      }
+      cur = needDeeper
+    }
+    
+    return found
+  }
+
+  return function findShortestPathToPrimitive(ob: any, matching: (a: unknown) => boolean) {
+    known = new Set()
+    const res = findShortestPathToPrimitiveRec(ob, matching)
+    // @ts-ignore
+    known = null
+    return res
+  }
+})();
+
+export function uniqueMatch(f: (a: unknown) => boolean) {
+  const known = new Set()
+  return (a: unknown) => {
+    if (known.has(a)) return false
+    known.add(a)
+    return f(a)
+  }
+}
