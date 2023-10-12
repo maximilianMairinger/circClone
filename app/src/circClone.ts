@@ -98,7 +98,7 @@ export default cloneKeys
 const defCircProtection = uniqueMatch(() => true)
 
 // Deeply iterate over an object, calling a callback for each key/value pair.
-export function *iterateOverObject(ob: object, keepCircsInResult = false, circProtection: (ob: object) => boolean = defCircProtection, ) {
+export function *iterateOverObject(ob: object, keepCircsInResult = false, circProtection: (ob: object) => boolean = defCircProtection): Generator<{keyChain: KeyChain, val: any, circ?: boolean}> {
   if (!circProtection(ob)) return // this is important, so that circProtection can also keep track of the root ob
   let cur: {keyChain: KeyChain, val: any}[] = [{keyChain: [], val: ob}]
   while(cur.length > 0) {
@@ -109,7 +109,7 @@ export function *iterateOverObject(ob: object, keepCircsInResult = false, circPr
       for (const key in val) {
         if (typeof val[key] === "object" && val[key] !== null) {
           if (circProtection(val[key])) needDeeper.push({keyChain: [...keyChain, key], val: val[key]})
-          else if (keepCircsInResult) yield {keyChain: [...keyChain, key], val: val[key]}
+          else if (keepCircsInResult) yield {keyChain: [...keyChain, key], val: val[key], circ: true}
         }
         else yield {keyChain: [...keyChain, key], val: val[key]}
       }

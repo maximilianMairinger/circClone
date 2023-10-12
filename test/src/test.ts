@@ -55,7 +55,7 @@ describe("iterateOverObject", () => {
       { keyChain: [], val: out },
       { keyChain: ["a"], val: out.a },
       { keyChain: ["a", "b"], val: out.a.b },
-      { keyChain: ["a", "b", "c"], val: out.a.b.c },
+      { keyChain: ["a", "b", "c"], val: out.a.b.c, circ: true },
       { keyChain: ["a", "d"], val: out.a.d }
     ])
   })
