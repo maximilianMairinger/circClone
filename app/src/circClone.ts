@@ -1,9 +1,11 @@
+import { iterate } from "iterare"
 export async function polyfill() {
   if (!(Object as any).hasOwn) {
     const { shim } = await import("object.hasown")
     shim()
   }
 }
+
 
 export const cloneKeysButKeepSym = (() => {
   let known: WeakMap<any, any>
@@ -93,42 +95,42 @@ export const cloneKeys = (() => {
 export default cloneKeys
 
 
+const defCircProtection = uniqueMatch(() => true)
+
+// Deeply iterate over an object, calling a callback for each key/value pair.
+export function *iterateOverObject(ob: object, keepCircsInResult = false, circProtection: (ob: object) => boolean = defCircProtection, ) {
+  if (!circProtection(ob)) return // this is important, so that circProtection can also keep track of the root ob
+  let cur: {keyChain: KeyChain, val: any}[] = [{keyChain: [], val: ob}]
+  while(cur.length > 0) {
+    const needDeeper = [] as {keyChain: KeyChain, val: any}[]
+    for (const c of cur) {
+      yield c
+      const {keyChain, val} = c
+      for (const key in val) {
+        if (typeof val[key] === "object" && val[key] !== null) {
+          if (circProtection(val[key])) needDeeper.push({keyChain: [...keyChain, key], val: val[key]})
+          else if (keepCircsInResult) yield {keyChain: [...keyChain, key], val: val[key]}
+        }
+        else yield {keyChain: [...keyChain, key], val: val[key]}
+      }
+    }
+    cur = needDeeper
+  }
+}
+
+
 type KeyChain = string[]
 
-export const findShortestPathToPrimitive = (() => {
-  let known: WeakSet<any>
-  function findShortestPathToPrimitiveRec(ob: object, matching: (a: unknown) => boolean): KeyChain[] {
-    known.add(ob)
-    
-    const found = [] as KeyChain[]
-    
-    let cur: ({keyChain: KeyChain, ob: object})[] = [{keyChain: [], ob}]
-    while(cur.length > 0) {
-      const needDeeper = [] as ({keyChain: KeyChain, ob: object})[]
-      for (const {ob, keyChain} of cur) {
-        for (const key in ob) {
-          if (typeof ob[key] === "object" && ob[key] !== null && (Object.getPrototypeOf(ob[key]) === null || Object.getPrototypeOf(ob[key]) === Object.prototype)) {
-            if (known.has(ob[key])) continue
-            known.add(ob[key])
-            needDeeper.push({keyChain: [...keyChain, key], ob: ob[key]})
-          }
-          else if (matching(ob[key])) found.push([...keyChain, key])
-        }
-      }
-      cur = needDeeper
-    }
-    
-    return found
-  }
+export function findShortestPathToPrimitive(ob: object, matching: (a: unknown) => boolean) {
+  return flatten(ob).filter(({val}) => matching(val)).map(({keyChain}) => keyChain)
+}
 
-  return function findShortestPathToPrimitive(ob: any, matching: (a: unknown) => boolean) {
-    known = new Set()
-    const res = findShortestPathToPrimitiveRec(ob, matching)
-    // @ts-ignore
-    known = null
-    return res
-  }
-})();
+
+// warning: this omits circular references completely. Only the reference nearest to the root will be kept.
+export function flatten(ob: object) {
+  return iterate(iterateOverObject(ob)).filter(({val}) => typeof val !== "object" || val === null)
+}
+
 
 export function uniqueMatch(f: (a: unknown) => boolean) {
   const known = new Set()

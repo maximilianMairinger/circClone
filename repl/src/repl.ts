@@ -1,9 +1,14 @@
-import { cloneKeys, cloneKeysButKeepSym, mergeKeysDeep, mergeKeysDeepButNotCyclic } from "../../app/src/circClone"
+import { cloneKeys, cloneKeysButKeepSym, mergeKeysDeep, mergeKeysDeepButNotCyclic, findShortestPathToPrimitive, flatten, iterateOverObject } from "../../app/src/circClone"
 import deepMerge from "deepmerge"
 import rfdc from 'rfdc'
 
 
-import "./bench"
+
+
+const obj: any = { a: { b: {}, d: 2 } }
+obj.a.b.c = obj
+debugger
+console.log(Array.from(iterateOverObject(obj)))
 
 
 // const objA = { a: "a" }
