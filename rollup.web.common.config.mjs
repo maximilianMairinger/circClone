@@ -5,9 +5,9 @@ import json from '@rollup/plugin-json'
 
 
 export default {
-  input: 'repl/src/repl.ts',
+  input: './repl/src/repl.ts',
   output: {
-    file: 'repl/dist/circClone-repl.js',
+    file: './repl/dist/circClone-repl.js',
     format: 'cjs',
     sourcemap: true
   },
