@@ -6,9 +6,8 @@ import rfdc from 'rfdc'
 
 
 const obj: any = { a: { b: {}, d: 2 } }
-obj.a.b.c = obj
-debugger
-console.log(Array.from(iterateOverObject(obj)))
+obj.a.b.c = obj.a
+console.log(Array.from(iterateOverObject(obj, true)))
 
 
 // const objA = { a: "a" }

@@ -106,11 +106,25 @@ export const cloneKeys = (() => {
 export default cloneKeys
 
 
-const defCircProtection = uniqueMatch(() => true)
+const constrDefCircProtection = () => {
+  const known = new Map()
+  const f = (ob: object, fullPath: KeyChain) => {
+    if (known.has(ob)) return false
+    known.set(ob, fullPath)
+    return true
+  }
+  f.rootPath = (ob: object) => known.get(ob)
+  return f
+}
 
 // Deeply iterate over an object, calling a callback for each key/value pair.
-export function *iterateOverObject(ob: object, keepCircsInResult = false, circProtection: (ob: object) => boolean = defCircProtection): Generator<{keyChain: KeyChain, val: any, circ?: boolean}> {
-  if (!circProtection(ob)) return // this is important, so that circProtection can also keep track of the root ob
+export function iterateOverObject(ob: object, keepCircsInResult: true): Generator<{keyChain: string[], val: any, circ?: KeyChain}, void, unknown>
+export function iterateOverObject(ob: object, keepCircsInResult?: false | undefined, circProtection?: ((ob: object, fullPath: KeyChain) => boolean) & {rootPath?(ob: object): KeyChain}): Generator<{keyChain: string[], val: any}, void, unknown>
+export function iterateOverObject(ob: object, keepCircsInResult: true, circProtection?: ((ob: object, fullPath: KeyChain) => boolean)): Generator<{keyChain: string[], val: any, circ?: boolean}, void, unknown>
+export function iterateOverObject(ob: object, keepCircsInResult: true, circProtection?: ((ob: object, fullPath: KeyChain) => boolean) & {rootPath?(ob: object): KeyChain}): Generator<{keyChain: string[], val: any, circ?: KeyChain}, void, unknown>
+export function *iterateOverObject(ob: object, keepCircsInResult = false, circProtection: ((ob: object, fullPath: KeyChain) => boolean) & {rootPath?(ob: object): KeyChain} = constrDefCircProtection()) {
+  if (!circProtection(ob, [])) return // this is important, so that circProtection can also keep track of the root ob
+  const rootPathOrTrue = circProtection.rootPath !== undefined ? circProtection.rootPath.bind(circProtection) : () => true
   let cur: {keyChain: KeyChain, val: any}[] = [{keyChain: [], val: ob}]
   while(cur.length > 0) {
     const needDeeper = [] as {keyChain: KeyChain, val: any}[]
@@ -118,11 +132,13 @@ export function *iterateOverObject(ob: object, keepCircsInResult = false, circPr
       yield c
       const {keyChain, val} = c
       for (const key in val) {
-        if (typeof val[key] === "object" && val[key] !== null) {
-          if (circProtection(val[key])) needDeeper.push({keyChain: [...keyChain, key], val: val[key]})
-          else if (keepCircsInResult) yield {keyChain: [...keyChain, key], val: val[key], circ: true}
+        const deeperKeyChain = [...keyChain, key]
+        const v = val[key]
+        if (typeof v === "object" && v !== null) {
+          if (circProtection(v, deeperKeyChain)) needDeeper.push({keyChain: deeperKeyChain, val: v})
+          else if (keepCircsInResult) yield {keyChain: deeperKeyChain, val: v, circ: rootPathOrTrue(v)}
         }
-        else yield {keyChain: [...keyChain, key], val: val[key]}
+        else yield {keyChain: deeperKeyChain, val: v}
       }
     }
     cur = needDeeper
