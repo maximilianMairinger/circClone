@@ -62,6 +62,12 @@ describe("iterateOverObject", () => {
 })
 
 describe("findShortestPathToPrimitive", () => {
+  test("Should return iterator", () => {
+    expect(findShortestPathToPrimitive({a: 2}, a => a===2)).toBeIterable()
+    expect(Array.from(findShortestPathToPrimitive({a: 2}, a => a===2))).toBeInstanceOf(Array)
+  })
+
+
   test("should find the shortest path to a primitive value", () => {
     const obj = { a: { b: { c: 1, d: "1", e: "2" } } }
     const result = findShortestPathToPrimitive(obj, (val) => val == 1)
@@ -88,6 +94,11 @@ describe("findShortestPathToPrimitive", () => {
 })
 
 describe("flatten", () => {
+  test("Should return iterator", () => {
+    expect(flatten({a: 2})).toBeIterable()
+    expect(Array.from(flatten({a: 2}))).toBeInstanceOf(Array)
+  })
+
   test("should flatten a simple object", () => {
     const obj = { a: 1, b: 2, c: 3 }
     const result = flatten(obj)
