@@ -81,8 +81,9 @@ expect.extend({
       message: () => `Cannot find ${this.utils.printReceived(got)} in ${this.utils.printExpected(exp)}`,
     }
   },
-  eqArrInArbitraryOrder(_got: any[] | Iterable<any>, exp: any[]) {
+  eqArrInArbitraryOrder(_exp: any[], _got: any[] | Iterable<any>) {
     const got = _got instanceof Array ? _got : Array.from(_got)
+    const exp = _exp instanceof Array ? _exp : Array.from(_exp)
     
 
     if (exp.length !== got.length) return {

@@ -1,5 +1,5 @@
 import "./extend"
-import { iterateOverObject, findShortestPathToPrimitive, flatten, cloneKeys } from "../../app/src/circClone"
+import { iterateOverObject, findShortestPathToPrimitive, flatten, cloneKeys, uniqueMatch } from "../../app/src/circClone"
 
 
 describe("iterateOverObject", () => {
@@ -48,10 +48,25 @@ describe("iterateOverObject", () => {
 
   test("should handle circular references with keepCircsInResult=true", () => {
     const obj: any = { a: { b: {}, d: 2 } }
-    obj.a.b.c = obj
+    obj.a.b.c = obj.a
     
     const out = cloneKeys(obj)
     expect(iterateOverObject(obj, true)).eqArrInArbitraryOrder([
+      { keyChain: [], val: out },
+      { keyChain: ["a"], val: out.a },
+      { keyChain: ["a", "b"], val: out.a.b },
+      { keyChain: ["a", "b", "c"], val: out.a.b.c, circ: ["a"] },
+      { keyChain: ["a", "d"], val: out.a.d }
+    ])
+  })
+
+  test("should handle circular references with keepCircsInResult=true and custom has func without rootPath", () => {
+    const obj: any = { a: { b: {}, d: 2 } }
+    obj.a.b.c = obj
+    
+    const out = cloneKeys(obj)
+
+    expect(iterateOverObject(obj, true, uniqueMatch(() => true))).eqArrInArbitraryOrder([
       { keyChain: [], val: out },
       { keyChain: ["a"], val: out.a },
       { keyChain: ["a", "b"], val: out.a.b },
