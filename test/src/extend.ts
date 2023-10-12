@@ -1,7 +1,7 @@
 import expectOrdered from "jest-expect-ordered"
 import { stringify } from "circ-json"
 import { circularDeepEqual } from "fast-equals"
-import clone from "circ-clone"
+import clone from "./../../app/src/circClone"
 import { toOrdinal } from "number-to-words"
 import { LinkedList } from "fast-linked-list"
 
