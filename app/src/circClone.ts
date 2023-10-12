@@ -156,3 +156,29 @@ export function uniqueMatch(f: (a: unknown) => boolean) {
     return f(a)
   }
 }
+
+
+
+
+export function pluck(ob: any, path: KeyChain, setTo?: unknown) {
+  let cur = ob
+  const setToIsUnset = setTo === undefined
+  for (let i = 0; i < (path.length - (setToIsUnset ? 0 : 1)); i++) {
+    const key = path[i]
+    if (!Object.hasOwn(cur, key)) throw new Error("Path " + path.join(".") + " not found")
+    // ^^^^^^^^^^^^^^^^^^^^^^^^^^ prototype poisoning protection
+    cur = cur[key]
+  }
+  if (setToIsUnset) return cur
+  else {
+    if (path.length === 0) return setTo
+    else {
+      const pathFragment = path[path.length - 1]
+      if (cur[pathFragment] === undefined || Object.hasOwn(cur, pathFragment)) cur[pathFragment] = setTo
+      // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ prototype poisoning protection
+      return ob
+    }
+  }
+}
+
+
