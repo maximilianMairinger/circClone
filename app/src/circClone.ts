@@ -171,7 +171,9 @@ export function uniqueMatch(f: (a: unknown) => boolean) {
 
 
 
-export function pluck(ob: any, path: KeyChain, setTo?: unknown) {
+export function pluck(ob: any, path: KeyChain, setTo: ((val: unknown) => unknown), computeSet: true)
+export function pluck(ob: any, path: KeyChain, setTo?: unknown, computeSet?: false)
+export function pluck(ob: any, path: KeyChain, setTo?: unknown | ((val: unknown) => unknown), computeSet?: boolean) {
   let cur = ob
   const setToIsUnset = setTo === undefined
   for (let i = 0; i < (path.length - (setToIsUnset ? 0 : 1)); i++) {
@@ -182,10 +184,10 @@ export function pluck(ob: any, path: KeyChain, setTo?: unknown) {
   }
   if (setToIsUnset) return cur
   else {
-    if (path.length === 0) return setTo
+    if (path.length === 0) return computeSet ? (setTo as Function)(ob) : setTo
     else {
       const pathFragment = path[path.length - 1]
-      if (cur[pathFragment] === undefined || Object.hasOwn(cur, pathFragment)) cur[pathFragment] = setTo
+      if (cur[pathFragment] === undefined || Object.hasOwn(cur, pathFragment)) cur[pathFragment] = computeSet ? (setTo as Function)(cur[pathFragment]) : setTo
       // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ prototype poisoning protection
       return ob
     }
