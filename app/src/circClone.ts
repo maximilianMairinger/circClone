@@ -94,7 +94,7 @@ export const cloneKeys = (() => {
 
 export default cloneKeys
 
-type ObWithVal<Val> = {[key in string]: Val | ObWithVal<Val>}
+export type ObWithVal<Val> = {[key in string]: Val | ObWithVal<Val>}
 
 // we could maybe collaps this implementation with the clone keys one by simply doing map = val => val as default. But Im not sure if will negatively impact performance
 export const cloneKeysAndMapProps = (() => {
