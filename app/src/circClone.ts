@@ -94,15 +94,19 @@ export const cloneKeys = (() => {
 
 export default cloneKeys
 
-type ObWithVal<Val> = {[key in number | string]: Val | ObWithVal<Val>}
+type ObWithVal<Val> = {[key in string]: Val | ObWithVal<Val>}
 
 // we could maybe collaps this implementation with the clone keys one by simply doing map = val => val as default. But Im not sure if will negatively impact performance
 export const cloneKeysAndMapProps = (() => {
   let known: WeakMap<any, any>
-  let mapF: (val: unknown, keyChain: KeyChain) => unknown
-  return function cloneKeys<Ob extends ObWithVal<Val>, Val, Ret>(ob: Ob, map: (val: Val, keyChain: KeyChain) => Ret): ObWithVal<Ret> {
+  let valMapF: (val: unknown, keyChain: KeyChain) => unknown
+  let keyMapF: (key: string, keyChainWithoutThisKey: KeyChain) => string
+  let hasKeyMapF: boolean
+  return function cloneKeys<Ob extends ObWithVal<Val>, Val, Ret>(ob: Ob, valMap: (val: Val, keyChain: KeyChain) => Ret, keyMap?: (key: string, keyChainWithoutThisKey: KeyChain) => string): ObWithVal<Ret> {
     known = new WeakMap()
-    mapF = map
+    valMapF = valMap
+    keyMapF = keyMap
+    hasKeyMapF = keyMap !== undefined
     return cloneKeysRec(ob, [])
   }
   function cloneKeysRec(ob: any, keyChain: KeyChain) {
@@ -110,11 +114,17 @@ export const cloneKeysAndMapProps = (() => {
       if (known.has(ob)) return known.get(ob)
       const cloned = new (ob instanceof Array ? Array : Object)
       known.set(ob, cloned)
-      for (const key of Object.keys(ob)) if (cloned[key] === undefined) cloned[key] = cloneKeysRec(ob[key], [...keyChain, key])
-      // prototype poisoning protection >^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      for (const srcKey of Object.keys(ob)) {
+        const key = hasKeyMapF ? keyMapF(srcKey, keyChain) : srcKey
+        
+        if (cloned[key] === undefined) cloned[key] = cloneKeysRec(ob[srcKey], [...keyChain, key])
+        // ^^^^^^^^^^^^^^^^^^^^^^^^^^^ > prototype poisoning protection 
+        else if (hasKeyMapF) throw new Error("Key collision: " + key)
+      }
+      
       return cloned
     }
-    else return mapF(ob, keyChain)
+    else return valMapF(ob, keyChain)
   }
 })()
 
