@@ -5,7 +5,7 @@ import commonMod from "./rollup.node.common.config.mjs"
 export default merge(commonMod, {
   input: 'app/src/circClone.ts',
   output: {
-    file: 'app/dist/cjs/josmFsAdapter.js',
+    file: 'app/dist/cjs/circClone.js',
     format: 'cjs'
   },
 })

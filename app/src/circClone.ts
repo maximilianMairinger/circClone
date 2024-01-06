@@ -94,6 +94,30 @@ export const cloneKeys = (() => {
 
 export default cloneKeys
 
+type ObWithVal<Val> = {[key in number | string]: Val | ObWithVal<Val>}
+
+// we could maybe collaps this implementation with the clone keys one by simply doing map = val => val as default. But Im not sure if will negatively impact performance
+export const cloneKeysAndMapProps = (() => {
+  let known: WeakMap<any, any>
+  let mapF: (val: unknown, keyChain: KeyChain) => unknown
+  return function cloneKeys<Ob extends ObWithVal<Val>, Val, Ret>(ob: Ob, map: (val: Val, keyChain: KeyChain) => Ret): ObWithVal<Ret> {
+    known = new WeakMap()
+    mapF = map
+    return cloneKeysRec(ob, [])
+  }
+  function cloneKeysRec(ob: any, keyChain: KeyChain) {
+    if (typeof ob === "object" && ob !== null) {
+      if (known.has(ob)) return known.get(ob)
+      const cloned = new (ob instanceof Array ? Array : Object)
+      known.set(ob, cloned)
+      for (const key of Object.keys(ob)) if (cloned[key] === undefined) cloned[key] = cloneKeysRec(ob[key], [...keyChain, key])
+      // prototype poisoning protection >^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      return cloned
+    }
+    else return mapF(ob, keyChain)
+  }
+})()
+
 
 const constrDefCircProtection = () => {
   const known = new Map()
