@@ -9,11 +9,11 @@ export async function polyfill() {
 
 export const cloneKeysButKeepSym = (() => {
   let known: WeakMap<any, any>
-  return function cloneKeysButKeepSym<Ob extends Object>(ob: Ob): Ob {
+  return function cloneKeysButKeepSym<Ob extends unknown>(ob: Ob): Ob {
     known = new WeakMap()
     return cloneKeysButKeepSymRec(ob)
   }
-  function cloneKeysButKeepSymRec(ob: any) {
+  function cloneKeysButKeepSymRec(ob: unknown) {
     if (typeof ob === "object" && ob !== null) {
       if (known.has(ob)) return known.get(ob)
       const cloned = new (ob instanceof Array ? Array : Object)
@@ -75,11 +75,11 @@ export const mergeKeysDeep = (() => {
 
 export const cloneKeys = (() => {
   let known: WeakMap<any, any>
-  return function cloneKeys<Ob extends object>(ob: Ob): Ob {
+  return function cloneKeys<Ob extends unknown>(ob: Ob): Ob {
     known = new WeakMap()
     return cloneKeysRec(ob)
   }
-  function cloneKeysRec(ob: any) {
+  function cloneKeysRec(ob: unknown) {
     if (typeof ob === "object" && ob !== null) {
       if (known.has(ob)) return known.get(ob)
       const cloned = new (ob instanceof Array ? Array : Object)
@@ -94,7 +94,7 @@ export const cloneKeys = (() => {
 
 export default cloneKeys
 
-export type ObWithVal<Val> = {[key in string]: Val | ObWithVal<Val>}
+export type ObWithVal<Val> = {[key in string]: Val | ObWithVal<Val>} | Val
 
 // we could maybe collaps this implementation with the clone keys one by simply doing map = val => val as default. But Im not sure if will negatively impact performance
 export const cloneKeysAndMapProps = (() => {
