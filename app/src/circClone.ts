@@ -183,7 +183,7 @@ export function findShortestPathToPrimitive(ob: unknown, matching: (a: unknown) 
 
 // warning: this omits circular references completely. Only the reference nearest to the root will be kept.
 export function flatten(ob: unknown) {
-  return iterate(iterateOverObject(ob)).filter((a) => !isPlainObjectOrArray(a))
+  return iterate(iterateOverObject(ob)).filter(({val}) => !isPlainObjectOrArray(val))
 }
 
 
