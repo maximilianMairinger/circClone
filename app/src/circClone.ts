@@ -177,14 +177,13 @@ export function *iterateOverObject(ob: unknown, keepCircsInResult = false, circP
 type KeyChain = string[]
 
 export function findShortestPathToPrimitive(ob: unknown, matching: (a: unknown) => boolean) {
-  return iterate(iterateOverObject(ob)).filter(({val}) => matching(val)).map(({keyChain}) => keyChain)
+  return flatten(ob).filter(({val}) => matching(val)).map(({keyChain}) => keyChain)
 }
 
 
 // warning: this omits circular references completely. Only the reference nearest to the root will be kept.
 export function flatten(ob: unknown) {
-  console.warn("flatten is deprecated. Use iterateOverObject instead. (its just wrapped into a iterare instance)")
-  return iterate(iterateOverObject(ob))
+  return iterate(iterateOverObject(ob)).filter((a) => !isPlainObjectOrArray(a))
 }
 
 
