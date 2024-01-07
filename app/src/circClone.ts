@@ -211,9 +211,9 @@ type DeepKeyChainValue<T, P extends KeyChain> = P extends [infer First, ...infer
 
 
 
-export function pluck<T extends object, S, Path extends KeyChain>(ob: T, path: Path, setTo: ((val: DeepKeyChainValue<TemplateStringsArray, Path>) => S), computeSet: true): T
-export function pluck<T extends object, S, Path extends KeyChain>(ob: T, path: Path, setTo?: S, computeSet?: false): T
-export function pluck<T extends object, S, Path extends KeyChain>(ob: T, path: Path): DeepKeyChainValue<TemplateStringsArray, Path>
+export function pluck<T, S, Path extends KeyChain>(ob: T, path: Path, setTo: ((val: DeepKeyChainValue<TemplateStringsArray, Path>) => S), computeSet: true): T
+export function pluck<T, S, Path extends KeyChain>(ob: T, path: Path, setTo?: S, computeSet?: false): T
+export function pluck<T, S, Path extends KeyChain>(ob: T, path: Path): DeepKeyChainValue<TemplateStringsArray, Path>
 export function pluck(ob: any, path: KeyChain, setTo?: unknown | ((val: unknown) => unknown), computeSet?: boolean) {
   let cur = ob
   const setToIsUnset = setTo === undefined
