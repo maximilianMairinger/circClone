@@ -1,10 +1,8 @@
 import { iterate } from "iterare"
-export async function polyfill() {
-  if (!(Object as any).hasOwn) {
-    const { shim } = await import("object.hasown")
-    shim()
-  }
-}
+import sani, { OBJECT, matches } from "sanitize-against"
+
+
+export {polyfill} from "sanitize-against"
 
 
 export const cloneKeysButKeepSym = (() => {
@@ -140,6 +138,9 @@ const constrDefCircProtection = () => {
   return f
 }
 
+const isPlainObject = matches(sani(new OBJECT()))
+
+
 // Deeply iterate over an object, calling a callback for each key/value pair.
 export function iterateOverObject(ob: unknown, keepCircsInResult: true): Generator<{keyChain: string[], val: any, circ?: KeyChain}, void, unknown>
 export function iterateOverObject(ob: unknown, keepCircsInResult?: false | undefined, circProtection?: ((ob: object, fullPath: KeyChain) => boolean) & {rootPath?(ob: object): KeyChain}): Generator<{keyChain: string[], val: any}, void, unknown>
@@ -161,7 +162,7 @@ export function *iterateOverObject(ob: unknown, keepCircsInResult = false, circP
       for (const key in val) {
         const deeperKeyChain = [...keyChain, key]
         const v = val[key]
-        if (typeof v === "object" && v !== null) {
+        if (isPlainObject(v)) {
           if (circProtection(v, deeperKeyChain)) needDeeper.push({keyChain: deeperKeyChain, val: v})
           else if (keepCircsInResult) yield {keyChain: deeperKeyChain, val: v, circ: rootPathOrTrue(v)}
         }
@@ -197,9 +198,21 @@ export function uniqueMatch(f: (a: unknown) => boolean) {
 
 
 
+// Helper type to safely access deep properties by their paths
+type DeepKeyChainValue<T, P extends KeyChain> = P extends [infer First, ...infer Rest]
+  ? First extends keyof T
+    ? Rest extends KeyChain
+      ? DeepKeyChainValue<T[First], Rest>
+      : never
+    : never
+  : T;
 
-export function pluck(ob: any, path: KeyChain, setTo: ((val: unknown) => unknown), computeSet: true)
-export function pluck(ob: any, path: KeyChain, setTo?: unknown, computeSet?: false)
+
+
+
+export function pluck<T extends object, S, Path extends KeyChain>(ob: T, path: Path, setTo: ((val: DeepKeyChainValue<TemplateStringsArray, Path>) => S), computeSet: true): T
+export function pluck<T extends object, S, Path extends KeyChain>(ob: T, path: Path, setTo?: S, computeSet?: false): T
+export function pluck<T extends object, S, Path extends KeyChain>(ob: T, path: Path): DeepKeyChainValue<TemplateStringsArray, Path>
 export function pluck(ob: any, path: KeyChain, setTo?: unknown | ((val: unknown) => unknown), computeSet?: boolean) {
   let cur = ob
   const setToIsUnset = setTo === undefined
