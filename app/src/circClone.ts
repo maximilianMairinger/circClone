@@ -1,5 +1,5 @@
 import { iterate } from "iterare"
-import sani, { OBJECT, matches } from "sanitize-against"
+import sani, { OBJECT, matches, OR } from "sanitize-against"
 
 
 export {polyfill} from "sanitize-against"
@@ -138,7 +138,7 @@ const constrDefCircProtection = () => {
   return f
 }
 
-const isPlainObject = matches(sani(new OBJECT()))
+const isPlainObjectOrArray = matches(sani(new OR(new OBJECT(), Array)))
 
 
 // Deeply iterate over an object, calling a callback for each key/value pair.
@@ -159,10 +159,10 @@ export function *iterateOverObject(ob: unknown, keepCircsInResult = false, circP
     for (const c of cur) {
       yield c
       const {keyChain, val} = c
-      for (const key in val) {
+      for (const key of Object.keys(val)) {
         const deeperKeyChain = [...keyChain, key]
         const v = val[key]
-        if (isPlainObject(v)) {
+        if (isPlainObjectOrArray(v)) {
           if (circProtection(v, deeperKeyChain)) needDeeper.push({keyChain: deeperKeyChain, val: v})
           else if (keepCircsInResult) yield {keyChain: deeperKeyChain, val: v, circ: rootPathOrTrue(v)}
         }
@@ -183,7 +183,8 @@ export function findShortestPathToPrimitive(ob: unknown, matching: (a: unknown) 
 
 // warning: this omits circular references completely. Only the reference nearest to the root will be kept.
 export function flatten(ob: unknown) {
-  return iterate(iterateOverObject(ob)).filter(({val}) => typeof val !== "object" || val === null)
+  console.warn("flatten is deprecated. Use iterateOverObject instead. (its just wrapped into a iterare instance)")
+  return iterate(iterateOverObject(ob))
 }
 
 
