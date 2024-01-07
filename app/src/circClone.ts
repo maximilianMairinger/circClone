@@ -177,7 +177,7 @@ export function *iterateOverObject(ob: unknown, keepCircsInResult = false, circP
 type KeyChain = string[]
 
 export function findShortestPathToPrimitive(ob: unknown, matching: (a: unknown) => boolean) {
-  return flatten(ob).filter(({val}) => matching(val)).map(({keyChain}) => keyChain)
+  return iterate(iterateOverObject(ob)).filter(({val}) => matching(val)).map(({keyChain}) => keyChain)
 }
 
 
