@@ -141,14 +141,18 @@ const constrDefCircProtection = () => {
 }
 
 // Deeply iterate over an object, calling a callback for each key/value pair.
-export function iterateOverObject(ob: object, keepCircsInResult: true): Generator<{keyChain: string[], val: any, circ?: KeyChain}, void, unknown>
-export function iterateOverObject(ob: object, keepCircsInResult?: false | undefined, circProtection?: ((ob: object, fullPath: KeyChain) => boolean) & {rootPath?(ob: object): KeyChain}): Generator<{keyChain: string[], val: any}, void, unknown>
-export function iterateOverObject(ob: object, keepCircsInResult: true, circProtection?: ((ob: object, fullPath: KeyChain) => boolean)): Generator<{keyChain: string[], val: any, circ?: boolean}, void, unknown>
-export function iterateOverObject(ob: object, keepCircsInResult: true, circProtection?: ((ob: object, fullPath: KeyChain) => boolean) & {rootPath?(ob: object): KeyChain}): Generator<{keyChain: string[], val: any, circ?: KeyChain}, void, unknown>
-export function *iterateOverObject(ob: object, keepCircsInResult = false, circProtection: ((ob: object, fullPath: KeyChain) => boolean) & {rootPath?(ob: object): KeyChain} = constrDefCircProtection()) {
+export function iterateOverObject(ob: unknown, keepCircsInResult: true): Generator<{keyChain: string[], val: any, circ?: KeyChain}, void, unknown>
+export function iterateOverObject(ob: unknown, keepCircsInResult?: false | undefined, circProtection?: ((ob: object, fullPath: KeyChain) => boolean) & {rootPath?(ob: object): KeyChain}): Generator<{keyChain: string[], val: any}, void, unknown>
+export function iterateOverObject(ob: unknown, keepCircsInResult: true, circProtection?: ((ob: object, fullPath: KeyChain) => boolean)): Generator<{keyChain: string[], val: any, circ?: boolean}, void, unknown>
+export function iterateOverObject(ob: unknown, keepCircsInResult: true, circProtection?: ((ob: object, fullPath: KeyChain) => boolean) & {rootPath?(ob: object): KeyChain}): Generator<{keyChain: string[], val: any, circ?: KeyChain}, void, unknown>
+export function *iterateOverObject(ob: unknown, keepCircsInResult = false, circProtection: ((ob: object, fullPath: KeyChain) => boolean) & {rootPath?(ob: object): KeyChain} = constrDefCircProtection()) {
+  let cur: {keyChain: KeyChain, val: any}[] = [{keyChain: [], val: ob}]
+  if (typeof ob !== "object" || ob === null) {
+    yield {keyChain: [], val: ob}
+    return
+  }
   if (!circProtection(ob, [])) return // this is important, so that circProtection can also keep track of the root ob
   const rootPathOrTrue = circProtection.rootPath !== undefined ? circProtection.rootPath.bind(circProtection) : () => true
-  let cur: {keyChain: KeyChain, val: any}[] = [{keyChain: [], val: ob}]
   while(cur.length > 0) {
     const needDeeper = [] as {keyChain: KeyChain, val: any}[]
     for (const c of cur) {
@@ -171,13 +175,13 @@ export function *iterateOverObject(ob: object, keepCircsInResult = false, circPr
 
 type KeyChain = string[]
 
-export function findShortestPathToPrimitive(ob: object, matching: (a: unknown) => boolean) {
+export function findShortestPathToPrimitive(ob: unknown, matching: (a: unknown) => boolean) {
   return flatten(ob).filter(({val}) => matching(val)).map(({keyChain}) => keyChain)
 }
 
 
 // warning: this omits circular references completely. Only the reference nearest to the root will be kept.
-export function flatten(ob: object) {
+export function flatten(ob: unknown) {
   return iterate(iterateOverObject(ob)).filter(({val}) => typeof val !== "object" || val === null)
 }
 

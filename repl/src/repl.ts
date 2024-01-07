@@ -5,12 +5,10 @@ import rfdc from 'rfdc'
 
 
 
-const obj = { a: { b: {q: false}, d: 2, e: "whaat" } }
+const obj = () => {}
 // @ts-ignore
-obj.a.b.c = obj.a
-console.log(cloneKeysAndMapProps(obj, (a) => {
-  return a + ""
-}))
+// obj.a.b.c = obj.a
+console.log(Array.from(iterateOverObject(obj)))
 
 
 // const objA = { a: "a" }
