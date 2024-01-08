@@ -1,8 +1,9 @@
 import { iterate } from "iterare"
 import sani, { OBJECT, matches, OR } from "sanitize-against"
-
-
 export {polyfill} from "sanitize-against"
+
+
+// maybe use https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Iterator/filter over iterare
 
 
 export const cloneKeysButKeepSym = (() => {
@@ -12,7 +13,7 @@ export const cloneKeysButKeepSym = (() => {
     return cloneKeysButKeepSymRec(ob)
   }
   function cloneKeysButKeepSymRec(ob: unknown) {
-    if (typeof ob === "object" && ob !== null) {
+    if (isPlainObjectOrArray(ob)) {
       if (known.has(ob)) return known.get(ob)
       const cloned = new (ob instanceof Array ? Array : Object)
       known.set(ob, cloned)
@@ -35,8 +36,9 @@ export function mergeKeysDeepButNotCyclic<Into extends object, From extends obje
     const fromVal = from[key]
     if (intoVal !== undefined && !Object.hasOwn(into, key)) continue // prototype poisoning protection
 
-    if (typeof from[key] === "object" && fromVal !== null) {
-      if (typeof into[key] === "object" && intoVal !== null) mergeKeysDeepButNotCyclic(intoVal, fromVal)
+    
+    if (isPlainObjectOrArray(fromVal)) {
+      if (isPlainObjectOrArray(intoVal)) mergeKeysDeepButNotCyclic(intoVal, fromVal)
       else into[key] = cloneKeys(from[key])
     }
     else into[key] = fromVal
@@ -60,9 +62,9 @@ export const mergeKeysDeep = (() => {
       if (intoVal !== undefined && !Object.hasOwn(into, key)) continue // prototype poisoning protection
       
 
-      if (typeof from[key] === "object" && fromVal !== null) {
+      if (isPlainObjectOrArray(fromVal)) {
         if (known.has(from[key])) into[key] = known.get(from[key])
-        else if (typeof into[key] === "object" && intoVal !== null) mergeKeysDeepRec(intoVal, fromVal)
+        else if (isPlainObjectOrArray(intoVal)) mergeKeysDeepRec(intoVal, fromVal)
         else into[key] = cloneKeys(from[key])
       }
       else into[key] = fromVal
@@ -78,7 +80,7 @@ export const cloneKeys = (() => {
     return cloneKeysRec(ob)
   }
   function cloneKeysRec(ob: unknown) {
-    if (typeof ob === "object" && ob !== null) {
+    if (isPlainObjectOrArray(ob)) {
       if (known.has(ob)) return known.get(ob)
       const cloned = new (ob instanceof Array ? Array : Object)
       known.set(ob, cloned)
@@ -108,7 +110,7 @@ export const cloneKeysAndMapProps = (() => {
     return cloneKeysRec(ob, [])
   }
   function cloneKeysRec(ob: any, keyChain: KeyChain) {
-    if (typeof ob === "object" && ob !== null) {
+    if (isPlainObjectOrArray(ob)) {
       if (known.has(ob)) return known.get(ob)
       const cloned = new (ob instanceof Array ? Array : Object)
       known.set(ob, cloned)
@@ -127,6 +129,7 @@ export const cloneKeysAndMapProps = (() => {
 })()
 
 
+
 const constrDefCircProtection = () => {
   const known = new Map()
   const f = (ob: object, fullPath: KeyChain) => {
@@ -138,7 +141,7 @@ const constrDefCircProtection = () => {
   return f
 }
 
-const isPlainObjectOrArray = matches(sani(new OR(new OBJECT(), Array)))
+export const isPlainObjectOrArray = matches(sani(new OR(new OBJECT(), Array)))
 
 
 // Deeply iterate over an object, calling a callback for each key/value pair.
@@ -148,11 +151,11 @@ export function iterateOverObject(ob: unknown, keepCircsInResult: true, circProt
 export function iterateOverObject(ob: unknown, keepCircsInResult: true, circProtection?: ((ob: object, fullPath: KeyChain) => boolean) & {rootPath?(ob: object): KeyChain}): Generator<{keyChain: string[], val: any, circ?: KeyChain}, void, unknown>
 export function *iterateOverObject(ob: unknown, keepCircsInResult = false, circProtection: ((ob: object, fullPath: KeyChain) => boolean) & {rootPath?(ob: object): KeyChain} = constrDefCircProtection()) {
   let cur: {keyChain: KeyChain, val: any}[] = [{keyChain: [], val: ob}]
-  if (typeof ob !== "object" || ob === null) {
+  if (!isPlainObjectOrArray(ob)) {
     yield {keyChain: [], val: ob}
     return
   }
-  if (!circProtection(ob, [])) return // this is important, so that circProtection can also keep track of the root ob
+  if (!circProtection(ob as object | any[], [])) return // this is important, so that circProtection can also keep track of the root ob
   const rootPathOrTrue = circProtection.rootPath !== undefined ? circProtection.rootPath.bind(circProtection) : () => true
   while(cur.length > 0) {
     const needDeeper = [] as {keyChain: KeyChain, val: any}[]
@@ -172,6 +175,8 @@ export function *iterateOverObject(ob: unknown, keepCircsInResult = false, circP
     cur = needDeeper
   }
 }
+
+
 
 
 type KeyChain = string[]
