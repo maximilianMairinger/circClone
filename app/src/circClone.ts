@@ -3,7 +3,7 @@ import sani, { OBJECT, matches, OR } from "sanitize-against"
 export {polyfill} from "sanitize-against"
 
 
-// maybe use https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Iterator/filter over iterare
+// maybe use https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Iterator/filter over iterare, polyfill much bigger than iterare though...
 
 
 export const cloneKeysButKeepSym = (() => {
@@ -29,46 +29,41 @@ export const cloneKeysButKeepSym = (() => {
 
 
 
-// todo: change from and into 
-export function mergeKeysDeepButNotCyclic<Into extends object, From extends object>(into: Into, from: From): Into & From {
-  for (const key of Object.keys(from)) {
-    const intoVal = into[key]
-    const fromVal = from[key]
-    if (intoVal !== undefined && !Object.hasOwn(into, key)) continue // prototype poisoning protection
+export function mergeKeysDeepButNotCyclic<Into extends unknown, From extends unknown>(into: Into, from: From): Into & From {
+  if (isPlainObjectOrArray(from) && isPlainObjectOrArray(into)) {
+    for (const key of Object.keys(from)) {
+      const intoVal = into[key] as any
+      const fromVal = from[key] as any
+      if (intoVal !== undefined && !Object.hasOwn(into as any, key)) continue // prototype poisoning protection
 
-    
-    if (isPlainObjectOrArray(fromVal)) {
-      if (isPlainObjectOrArray(intoVal)) mergeKeysDeepButNotCyclic(intoVal, fromVal)
-      else into[key] = cloneKeys(from[key])
+      (into as any)[key] = mergeKeysDeepButNotCyclic(intoVal, fromVal)
     }
-    else into[key] = fromVal
+    return into as any
   }
-  return into as any
+  else return from as any
 }
 
 
 export const mergeKeysDeep = (() => {
   let known: WeakMap<any, any>
-  return function mergeKeysDeep<Into extends object, From extends object>(into: Into, from: From): Into & From {
+  return function mergeKeysDeep<Into extends unknown, From extends unknown>(into: Into, from: From): Into & From {
     known = new WeakMap()
-    mergeKeysDeepRec(into, from)
-    return into as any
+    return mergeKeysDeepRec(into, from)
   }
-  function mergeKeysDeepRec(into: object, from: object) { 
-    known.set(from, into)
-    for (const key of Object.keys(from)) {
-      const intoVal = into[key]
-      const fromVal = from[key]
-      if (intoVal !== undefined && !Object.hasOwn(into, key)) continue // prototype poisoning protection
-      
-
-      if (isPlainObjectOrArray(fromVal)) {
-        if (known.has(from[key])) into[key] = known.get(from[key])
-        else if (isPlainObjectOrArray(intoVal)) mergeKeysDeepRec(intoVal, fromVal)
-        else into[key] = cloneKeys(from[key])
+  function mergeKeysDeepRec(into: unknown, from: unknown) { 
+    if (isPlainObjectOrArray(from) && isPlainObjectOrArray(into)) {
+      if (known.has(from)) return known.get(from)
+      known.set(from, into)
+      for (const key of Object.keys(from)) {
+        const intoVal = into[key]
+        const fromVal = from[key]
+        if (intoVal !== undefined && !Object.hasOwn(into as any, key)) continue // prototype poisoning protection
+  
+        (into as any)[key] = mergeKeysDeepRec(intoVal, fromVal)
       }
-      else into[key] = fromVal
+      return into
     }
+    else return from
   }
 })()
 

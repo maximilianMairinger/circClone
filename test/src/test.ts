@@ -1,5 +1,137 @@
 import "./extend"
-import { iterateOverObject, findShortestPathToPrimitive, flatten, cloneKeys, uniqueMatch } from "../../app/src/circClone"
+import { iterateOverObject, findShortestPathToPrimitive, flatten, cloneKeys, uniqueMatch, mergeKeysDeep, mergeKeysDeepButNotCyclic } from "../../app/src/circClone"
+
+
+describe("mergeKeysDeep", () => {
+  test("multi ref: primitive set", () => {
+    const bob = {
+      lel: 2
+    } as any
+
+    const ob = {
+      a: bob,
+      b: bob,
+      c: bob
+    }
+
+    expect(mergeKeysDeep(ob, {a: undefined})).eq({a: undefined, b: bob, c: bob})
+
+    expect(mergeKeysDeep(ob, {a: undefined}).b).toBe(bob)
+    expect(mergeKeysDeep(ob, {a: undefined}).c).toBe(bob)
+  })
+
+  test("multi ref: ref set", () => {
+    const bob = {
+      lel: 2
+    } as any
+
+    const ob = {
+      a: bob,
+      b: bob,
+      c: bob
+    }
+
+    expect(mergeKeysDeep(ob, {a: {lel: 3}})).eq({a: {lel: 3}, b: {lel: 3}, c: {lel: 3}})
+
+    expect(mergeKeysDeep(ob, {a: {lel: 4}}).b).toBe(bob)
+    expect(bob.lel).toBe(4)
+    expect(mergeKeysDeep(ob, {a: {lel: 5}}).c).toBe(bob)
+    expect(bob.lel).toBe(5)
+  })
+
+  test("init primitive to", () => {
+    expect(mergeKeysDeep(undefined, {a: 2, b: 3})).eq({a: 2, b: 3})
+    expect(mergeKeysDeep(null, {a: 2, b: 3})).eq({a: 2, b: 3})
+    expect(mergeKeysDeep("qwe", {a: 2, b: 3})).eq({a: 2, b: 3})
+    expect(mergeKeysDeep(2, {a: 2, b: 3})).eq({a: 2, b: 3})
+
+
+    const ob = {a: 2, b: 3}
+    expect(mergeKeysDeep(undefined, ob)).toBe(ob)
+  })
+
+  test("init primitive from", () => {
+    expect(mergeKeysDeep({a: 2, b: 3}, undefined)).eq(undefined)
+    expect(mergeKeysDeep({a: 2, b: 3}, null)).eq(null)
+    expect(mergeKeysDeep({a: 2, b: 3}, "qwe")).eq("qwe")
+    expect(mergeKeysDeep({a: 2, b: 3}, 2)).eq(2)
+  })
+
+  test("prototype poisoning", () => {
+    const obj = Object.create(null)
+    obj.__proto__ = {a: 2}
+
+    expect(mergeKeysDeep({}, obj).a).not.toBe(2)
+  })
+})
+
+describe("mergeKeysButNotDeep", () => {
+  test("multi ref: primitive set", () => {
+    const bob = {
+      lel: 2
+    } as any
+
+    const ob = {
+      a: bob,
+      b: bob,
+      c: bob
+    }
+
+    expect(mergeKeysDeepButNotCyclic(ob, {a: undefined})).eq({a: undefined, b: bob, c: bob})
+
+    expect(mergeKeysDeepButNotCyclic(ob, {a: undefined}).b).toBe(bob)
+    expect(mergeKeysDeepButNotCyclic(ob, {a: undefined}).c).toBe(bob)
+    const o = mergeKeysDeepButNotCyclic(ob, {a: undefined})
+    expect(o.b).toBe(o.c)
+  })
+
+  test("multi ref: ref set", () => {
+    const bob = {
+      lel: 2
+    } as any
+
+    const ob = {
+      a: bob,
+      b: bob,
+      c: bob
+    }
+
+    expect(mergeKeysDeepButNotCyclic(ob, {a: {lel: 3}})).eq({a: {lel: 3}, b: {lel: 3}, c: {lel: 3}})
+
+    expect(mergeKeysDeepButNotCyclic(ob, {a: {lel: 3}}).a).toBe(bob)
+
+    expect(mergeKeysDeepButNotCyclic(ob, {a: {lel: 4}}).b).toBe(bob)
+    expect(bob.lel).toBe(4)
+    expect(mergeKeysDeepButNotCyclic(ob, {a: {lel: 5}}).c).toBe(bob)
+    expect(bob.lel).toBe(5)
+  })
+
+  test("init primitive to", () => {
+    expect(mergeKeysDeepButNotCyclic(undefined, {a: 2, b: 3})).eq({a: 2, b: 3})
+    expect(mergeKeysDeepButNotCyclic(null, {a: 2, b: 3})).eq({a: 2, b: 3})
+    expect(mergeKeysDeepButNotCyclic("qwe", {a: 2, b: 3})).eq({a: 2, b: 3})
+    expect(mergeKeysDeepButNotCyclic(2, {a: 2, b: 3})).eq({a: 2, b: 3})
+    
+
+    const ob = {a: 2, b: 3}
+    expect(mergeKeysDeepButNotCyclic(undefined, ob)).toBe(ob)
+  })
+
+  test("init primitive from", () => {
+    expect(mergeKeysDeepButNotCyclic({a: 2, b: 3}, undefined)).eq(undefined)
+    expect(mergeKeysDeepButNotCyclic({a: 2, b: 3}, null)).eq(null)
+    expect(mergeKeysDeepButNotCyclic({a: 2, b: 3}, "qwe")).eq("qwe")
+    expect(mergeKeysDeepButNotCyclic({a: 2, b: 3}, 2)).eq(2)
+  })
+
+  test("prototype poisoning", () => {
+    const obj = Object.create(null)
+    obj.__proto__ = {a: 2}
+
+    expect(mergeKeysDeepButNotCyclic({}, obj).a).not.toBe(2)
+  })
+})
+
 
 
 describe("iterateOverObject", () => {
